@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#111116">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="PassCraft">
+    <link rel="icon" type="image/x-icon" href="lock.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>">
+    <title>PassCraft</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        :root {
+            --bg: #111116;
+            --bg2: #16161d;
+            --card: #1c1c24;
+            --card2: #22222c;
+            --border: #2a2a38;
+            --border2: #3a3a50;
+            --accent: #7c6dfa;
+            --accent2: #5b4fe0;
+            --pink: #f06292;
+            --cyan: #4dd0e1;
+            --green: #66bb6a;
+            --amber: #ffb74d;
+            --text: #e8e8f0;
+            --text2: #7a7a9a;
+            --text3: #3a3a55;
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            --mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+        }
+
+        html, body {
+            min-height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 20%, rgba(124, 109, 250, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(240, 98, 146, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 16px 60px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .left-col {
+            min-width: 0;
+        }
+
+        .right-col {
+            min-width: 0;
+            position: sticky;
+            top: 20px;
+        }
+
+        @media (max-width: 720px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .right-col {
+                position: static;
+            }
+        }
+
+        /* Header */
+        .hdr {
+            text-align: center;
+            padding: 28px 0 32px;
+        }
+
+        .hdr-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 24px rgba(124, 109, 250, 0.3);
+        }
+
+        .hdr-title {
+            font-size: clamp(24px, 7vw, 34px);
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+
+        .hdr-title span {
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hdr-sub {
+            font-size: 13px;
+            color: var(--text2);
+            letter-spacing: .3px;
+        }
+
+        /* Card Elements */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text2);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        /* Inputs */
+        .input-group {
+            display: flex;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124, 109, 250, 0.12);
+        }
+
+        .input-prefix {
+            color: var(--text2);
+            font-size: 13px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            font-family: var(--mono);
+            border-right: 1px solid var(--border);
+        }
+
+        #nameInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 15px;
+            font-weight: 500;
+            padding: 13px 12px;
+            caret-color: var(--accent);
+        }
+
+        #nameInput::placeholder {
+            color: var(--text3);
+        }
+
+        .run-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            color: #fff;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0 20px;
+            cursor: pointer;
+            letter-spacing: .3px;
+            transition: filter .15s;
+            white-space: nowrap;
+        }
+
+        .run-btn:hover { filter: brightness(1.1); }
+        .run-btn:active { filter: brightness(.9); }
+
+        .extra-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .mini-input {
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+            padding: 10px 12px;
+            width: 100%;
+            transition: border-color .2s;
+            caret-color: var(--accent);
+        }
+
+        .mini-input:focus { border-color: var(--accent); }
+        .mini-input::placeholder { color: var(--text3); }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0 16px;
+        }
+
+        /* Style Toggles */
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 380px) {
+            .toggle-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .tgl {
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all .18s;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+        }
+
+        .tgl:active { transform: scale(.92); }
+        .tgl.on {
+            background: rgba(124, 109, 250, 0.1);
+            border-color: rgba(124, 109, 250, 0.5);
+        }
+
+        .tgl-icon { font-size: 20px; margin-bottom: 5px; }
+        .tgl-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text2);
+            letter-spacing: .3px;
+        }
+        
+        .tgl.on .tgl-name { color: var(--accent); }
+        .tgl-ex { font-size: 10px; color: var(--text3); margin-top: 2px; }
+        .tgl.on .tgl-ex { color: var(--text2); }
+
+        /* General Buttons */
+        .gen-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            border: none;
+            color: #fff;
+            font-family: var(--font);
+            font-size: 15px;
+            font-weight: 600;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            letter-spacing: .3px;
+            transition: all .2s;
+            touch-action: manipulation;
+        }
+
+        .gen-btn:hover {
+            box-shadow: 0 8px 24px rgba(124, 109, 250, 0.35);
+            filter: brightness(1.05);
+        }
+        .gen-btn:active { transform: scale(.97); }
+
+        /* Output Card */
+        .out-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .out-hdr {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .out-title { font-size: 13px; font-weight: 600; color: var(--text); }
+        
+        .out-badge {
+            font-size: 11px;
+            background: rgba(124, 109, 250, 0.12);
+            color: var(--accent);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .out-body { padding: 16px; }
+
+        /* Category Labels */
+        .cat-lbl {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 14px 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cat-lbl:first-child { margin-top: 0; }
+        .cat-lbl::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .dot-leet { background: #7c6dfa; }
+        .dot-caps { background: #f06292; }
+        .dot-sym { background: #4dd0e1; }
+        .dot-num { background: #66bb6a; }
+        .dot-rev { background: #ffb74d; }
+        .dot-ultra { background: #ef5350; }
+
+        /* Password Row */
+        .pass-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .pass-row:hover {
+            border-color: var(--accent);
+            background: rgba(124, 109, 250, 0.05);
+        }
+        
+        .pass-row:active { transform: scale(.985); }
+        
+        .pass-txt {
+            flex: 1;
+            font-family: var(--mono);
+            font-size: clamp(12px, 3.5vw, 14px);
+            color: var(--text);
+            letter-spacing: 1px;
+            word-break: break-all;
+            font-weight: 500;
+        }
+
+        .pass-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .pass-len {
+            font-size: 10px;
+            color: var(--text3);
+            font-family: var(--mono);
+        }
+
+        .pass-str {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .sw { background: rgba(239, 83, 80, .1); color: #ef5350; }
+        .sf { background: rgba(255, 183, 77, .1); color: #ffb74d; }
+        .sg { background: rgba(102, 187, 106, .1); color: #66bb6a; }
+        .ss { background: rgba(124, 109, 250, .1); color: var(--accent); }
+
+        .pass-ico {
+            font-size: 15px;
+            color: var(--text3);
+            flex-shrink: 0;
+            transition: color .15s;
+        }
+
+        .pass-row:hover .pass-ico { color: var(--accent); }
+
+        .copy-all {
+            width: 100%;
+            background: transparent;
+            border: 1.5px solid var(--border2);
+            color: var(--text2);
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 13px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .2s;
+            margin-top: 4px;
+        }
+
+        .copy-all:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(124, 109, 250, 0.05);
+        }
+        
+        .copy-all:active { transform: scale(.97); }
+
+        /* Loading */
+        .loading-wrap {
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin: 0 auto 12px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-txt {
+            font-size: 13px;
+            color: var(--text2);
+            letter-spacing: .3px;
+        }
+
+        /* Criteria & Strength Checker */
+        .check-input-wrapper {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .check-input {
+            width: 100%;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            padding: 11px 44px 11px 12px;
+            transition: border-color .2s;
+            caret-color: var(--accent);
+        }
+
+        .show-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text2);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .score-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .score-circle-wrapper {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+        }
+
+        .score-circle-svg {
+            transform: rotate(-90deg);
+            width: 72px;
+            height: 72px;
+        }
+
+        .score-circle-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 6;
+        }
+
+        .score-circle-progress {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 188.5;
+            stroke-dashoffset: 188.5;
+            transition: stroke-dashoffset .5s ease, stroke .4s ease;
+        }
+
+        .score-number {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .crit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            transition: all .2s;
+        }
+
+        .crit.pass {
+            background: rgba(102, 187, 106, 0.08);
+            border-color: rgba(102, 187, 106, 0.25);
+        }
+
+        .crit.fail {
+            background: var(--bg2);
+            border-color: var(--border);
+        }
+
+        .crit-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+            width: 18px;
+            text-align: center;
+            transition: all .2s;
+        }
+
+        .crit.pass .crit-icon { color: #66bb6a; }
+        
+        .crit-txt {
+            font-size: 12px;
+            color: var(--text2);
+            transition: color .2s;
+        }
+
+        .crit.pass .crit-txt { color: var(--text); }
+
+        .crack-time-container {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        /* Tips */
+        .tip-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 6px 0;
+        }
+
+        .tip-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .tip-txt {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.5;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 22px;
+            border-radius: 12px;
+            opacity: 0;
+            transition: all .25s;
+            pointer-events: none;
+            z-index: 9999;
+            white-space: nowrap;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(17,17,22,0.85);backdrop-filter:blur(12px);border-bottom:1px solid #2a2a38;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="width:34px;height:34px;background:linear-gradient(135deg,#7c6dfa,#f06292);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(124,109,250,0.35)">🔐</div>
+    <span style="font-size:16px;font-weight:700;color:#e8e8f0;letter-spacing:-0.3px">Pass<span style="background:linear-gradient(135deg,#7c6dfa,#f06292);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Craft</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a href="https://github.com/amar2710/passcraft" target="_blank" style="display:flex;align-items:center;gap:6px;background:#1c1c24;border:1px solid #2a2a38;border-radius:8px;padding:6px 12px;text-decoration:none;color:#7a7a9a;font-size:12px;font-weight:600;transition:all .15s" onmouseover="this.style.borderColor='#7c6dfa';this.style.color='#7c6dfa'" onmouseout="this.style.borderColor='#2a2a38';this.style.color='#7a7a9a'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<div class="app" style="padding-top:72px">
+    <!-- Header -->
+    <div class="hdr">
+        <div class="hdr-icon">🔐</div>
+        <div class="hdr-title">Pass<span>Craft</span></div>
+        <div class="hdr-sub">Smart name-based password generator</div>
+    </div>
+
+    <div class="layout">
+        <div class="left-col">
+            <!-- Input Card -->
+            <div class="card">
+                <div class="field-label">Your Name or Word</div>
+                <div class="input-group">
+                    <div class="input-prefix">~/</div>
+                    <input type="text" id="nameInput" placeholder="e.g. Shadow, Phoenix, Dragon..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="20">
+                    <button class="run-btn" onclick="generatePasswords()">Generate →</button>
+                </div>
+
+                <div class="extra-row">
+                    <input class="mini-input" type="number" id="yearInput" placeholder="📅 Birth year (optional)" maxlength="4" autocomplete="off">
+                    <input class="mini-input" type="text" id="extraInput" placeholder="💡 Extra word (optional)" maxlength="10" autocomplete="off">
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-label" style="margin-bottom:10px">Password Style</div>
+                <div class="toggle-grid">
+                    <div class="tgl on" data-key="leet" onclick="toggleSetting(this)">
+                        <div class="tgl-icon">🔢</div>
+                        <div class="tgl-name">L33T</div>
+                        <div class="tgl-ex">a→4, e→3</div>
+                    </div>
+                    <div class="tgl on" data-key="caps" onclick="toggleSetting(this)">
+                        <div class="tgl-icon">🔠</div>
+                        <div class="tgl-name">CaPs Mix</div>
+                        <div class="tgl-ex">AlTeRnAtE</div>
+                    </div>
+                    <div class="tgl on" data-key="sym" onclick="toggleSetting(this)">
+                        <div class="tgl-icon">⚡</div>
+                        <div class="tgl-name">Symbols</div>
+                        <div class="tgl-ex">!@#$%</div>
+                    </div>
+                    <div class="tgl on" data-key="num" onclick="toggleSetting(this)">
+                        <div class="tgl-icon">🔢</div>
+                        <div class="tgl-name">Numbers</div>
+                        <div class="tgl-ex">123 inject</div>
+                    </div>
+                    <div class="tgl on" data-key="rev" onclick="toggleSetting(this)">
+                        <div class="tgl-icon">🔄</div>
+                        <div class="tgl-name">Reverse</div>
+                        <div class="tgl-ex">nward→drawr</div>
+                    </div>
+                    <div class="tgl on" data-key="ultra" onclick="toggleSetting(this)">
+                        <div class="tgl-icon">💀</div>
+                        <div class="tgl-name">Ultra</div>
+                        <div class="tgl-ex">Max strong</div>
+                    </div>
+                </div>
+
+                <button class="gen-btn" onclick="generatePasswords()">🔐 Generate Passwords</button>
+            </div>
+
+            <!-- Output Container -->
+            <div id="output"></div>
+        </div>
+
+        <!-- Right Col: Strength Checker -->
+        <div class="right-col">
+            <div class="card">
+                <div class="field-label" style="margin-bottom:12px">🔍 Password Strength Checker</div>
+
+                <!-- Input -->
+                <div class="check-input-wrapper">
+                    <input type="text" id="checkInput" class="check-input" placeholder="Check a password..." oninput="evaluateStrength()" autocomplete="off" autocorrect="off" spellcheck="false">
+                    <button onclick="toggleVisibility()" id="showBtn" class="show-btn">👁</button>
+                </div>
+
+                <!-- Score circle + label -->
+                <div class="score-container">
+                    <div class="score-circle-wrapper">
+                        <svg viewBox="0 0 72 72" class="score-circle-svg">
+                            <circle cx="36" cy="36" r="30" class="score-circle-bg"/>
+                            <circle id="scoreCircle" cx="36" cy="36" r="30" class="score-circle-progress"/>
+                        </svg>
+                        <div id="scoreNum" class="score-number">0</div>
+                    </div>
+                    <div style="flex:1">
+                        <div id="strLabel" style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:4px">—</div>
+                        <div id="strSub" style="font-size:12px;color:var(--text3);line-height:1.5">Type a password to check its strength</div>
+                    </div>
+                </div>
+
+                <!-- Criteria checklist -->
+                <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px" id="criteria">
+                    <div class="crit" id="c-len">
+                        <span class="crit-icon">○</span><span class="crit-txt">At least 8 characters</span>
+                    </div>
+                    <div class="crit" id="c-len12">
+                        <span class="crit-icon">○</span><span class="crit-txt">12+ characters (recommended)</span>
+                    </div>
+                    <div class="crit" id="c-upper">
+                        <span class="crit-icon">○</span><span class="crit-txt">Uppercase letters (A-Z)</span>
+                    </div>
+                    <div class="crit" id="c-lower">
+                        <span class="crit-icon">○</span><span class="crit-txt">Lowercase letters (a-z)</span>
+                    </div>
+                    <div class="crit" id="c-num">
+                        <span class="crit-icon">○</span><span class="crit-txt">Numbers (0-9)</span>
+                    </div>
+                    <div class="crit" id="c-sym">
+                        <span class="crit-icon">○</span><span class="crit-txt">Special symbols (!@#$)</span>
+                    </div>
+                    <div class="crit" id="c-nocommon">
+                        <span class="crit-icon">○</span><span class="crit-txt">Not a common password</span>
+                    </div>
+                </div>
+
+                <!-- Crack time estimate -->
+                <div class="crack-time-container">
+                    <div style="font-size:10px;font-weight:600;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Estimated Crack Time</div>
+                    <div id="crackTime" style="font-size:15px;font-weight:700;color:var(--accent);font-family:var(--mono)">—</div>
+                    <div id="crackNote" style="font-size:11px;color:var(--text3);margin-top:3px">Enter a password above</div>
+                </div>
+            </div>
+
+            <!-- Tips card -->
+            <div class="card" style="margin-top:14px">
+                <div class="field-label" style="margin-bottom:12px">💡 Strong Password Tips</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <div class="tip-row"><span class="tip-icon">✅</span><span class="tip-txt">Mix uppercase + lowercase letters</span></div>
+                    <div class="tip-row"><span class="tip-icon">✅</span><span class="tip-txt">Add numbers and symbols (!@#$)</span></div>
+                    <div class="tip-row"><span class="tip-icon">✅</span><span class="tip-txt">Use 12+ characters minimum</span></div>
+                    <div class="tip-row"><span class="tip-icon">✅</span><span class="tip-txt">Avoid common words (password, 123)</span></div>
+                    <div class="tip-row"><span class="tip-icon">✅</span><span class="tip-txt">Different password for each account</span></div>
+                    <div class="tip-row"><span class="tip-icon">❌</span><span class="tip-txt">Don't use your exact name or birthday</span></div>
+                    <div class="tip-row"><span class="tip-icon">❌</span><span class="tip-txt">Never share passwords with anyone</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// --- Audio Setup ---
+let audioContext = null;
+
+function getAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+}
+
+function playTone(frequency, type = 'sine', duration = 0.1, volume = 0.15, delay = 0) {
+    try {
+        const ctx = getAudioContext();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+        
+        const startTime = ctx.currentTime + delay;
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.05);
+    } catch (error) {
+        // Silently fail if audio isn't supported or allowed yet
+    }
+}
+
+function playGenerationSound() {
+    [300, 400, 500, 650, 800].forEach((freq, index) => {
+        playTone(freq, 'sine', 0.1, 0.15, index * 0.05);
+    });
+}
+
+function playCopySound() {
+    playTone(880, 'sine', 0.07, 0.2);
+    playTone(1100, 'sine', 0.05, 0.12, 0.09);
+}
+
+function playToggleSound() {
+    playTone(600, 'triangle', 0.04, 0.08);
+}
+
+// Initialize audio context on first interaction
+document.addEventListener('touchstart', getAudioContext, { once: true, passive: true });
+document.addEventListener('click', getAudioContext, { once: true, passive: true });
+
+
+// --- Application State ---
+const config = {
+    leet: true,
+    caps: true,
+    sym: true,
+    num: true,
+    rev: true,
+    ultra: true
+};
+
+let generatedPasswordsList = [];
+
+function toggleSetting(element) {
+    const key = element.dataset.key;
+    config[key] = !config[key];
+    element.classList.toggle('on', config[key]);
+    playToggleSound();
+}
+
+document.getElementById('nameInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') generatePasswords();
+});
+
+
+// --- Password Generation Helpers ---
+const LEET_DICTIONARY = { 'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5', 't': '7', 'l': '1', 'g': '9', 'b': '8', 'z': '2' };
+const ADVANCED_LEET = { 'a': '@', 'e': '€', 's': '$', 'i': '!', 'o': '()', 'b': '|3', 't': '+' };
+const SYMBOL_LIST = ['!', '@', '#', '$', '%', '&', '*', '?', '+', '~', '^', '='];
+
+const CATEGORY_STYLES = {
+    'L33T SPEAK': 'dot-leet',
+    'CAPS MIX': 'dot-caps',
+    'SYMBOLS': 'dot-sym',
+    'NUMBERS': 'dot-num',
+    'REVERSED': 'dot-rev',
+    'ULTRA STRONG': 'dot-ultra'
+};
+
+function applyLeet(str, level) {
+    return str.split('').map(char => {
+        const lowerChar = char.toLowerCase();
+        if (level === 2 && ADVANCED_LEET[lowerChar] && Math.random() > 0.3) {
+            return ADVANCED_LEET[lowerChar];
+        }
+        if (LEET_DICTIONARY[lowerChar] && Math.random() > 0.35) {
+            return LEET_DICTIONARY[lowerChar];
+        }
+        return char;
+    }).join('');
+}
+
+function applyMixedCaps(str) {
+    return str.split('').map((char, index) => index % 2 ? char.toLowerCase() : char.toUpperCase()).join('');
+}
+
+function applyRandomCaps(str) {
+    return str.split('').map(char => Math.random() > 0.5 ? char.toUpperCase() : char.toLowerCase()).join('');
+}
+
+function getRandomSymbol() {
+    return SYMBOL_LIST[Math.floor(Math.random() * SYMBOL_LIST.length)];
+}
+
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function reverseString(str) {
+    return str.split('').reverse().join('');
+}
+
+function calculateStrengthScore(password) {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (password.length >= 16) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return Math.min(3, Math.round(score * 3 / 7));
+}
+
+function getStrengthClass(score) {
+    return ['sw', 'sf', 'sg', 'ss'][score];
+}
+
+function getStrengthName(score) {
+    return ['Weak', 'Fair', 'Good', 'Strong'][score];
+}
+
+// --- Main Builder Logic ---
+function buildPasswordSet(name, year, extraWord) {
+    const n = name;
+    const nLower = n.toLowerCase();
+    const nUpper = n.toUpperCase();
+    const nCapitalized = nLower.charAt(0).toUpperCase() + nLower.slice(1);
+    
+    const reversed = reverseString(nLower);
+    const reversedCapitalized = reversed.charAt(0).toUpperCase() + reversed.slice(1);
+    
+    const y = year || '';
+    const ex = extraWord || '';
+    const exCapitalized = ex ? ex.charAt(0).toUpperCase() + ex.slice(1).toLowerCase() : '';
+    
+    const results = [];
+
+    if (config.leet) {
+        results.push({ cat: 'L33T SPEAK', val: applyLeet(nCapitalized, 1) + (y || getRandomNumber(100, 999)) + getRandomSymbol() });
+        results.push({ cat: 'L33T SPEAK', val: getRandomSymbol() + applyLeet(nUpper, 2) + getRandomNumber(10, 99) + (ex ? applyLeet(exCapitalized, 1) : '') });
+        results.push({ cat: 'L33T SPEAK', val: applyLeet(nCapitalized, 1) + getRandomSymbol() + applyLeet(reversed.slice(0, 4), 1) + getRandomNumber(10, 99) });
+        if (ex) results.push({ cat: 'L33T SPEAK', val: applyLeet(nCapitalized, 2) + applyLeet(exCapitalized, 1) + (y || getRandomNumber(10, 99)) + getRandomSymbol() });
+    }
+    if (config.caps) {
+        results.push({ cat: 'CAPS MIX', val: applyMixedCaps(n) + getRandomSymbol() + getRandomNumber(10, 99) + (ex ? applyMixedCaps(ex) : '') });
+        results.push({ cat: 'CAPS MIX', val: applyRandomCaps(n) + (y || getRandomNumber(100, 999)) + getRandomSymbol() + applyRandomCaps(reversed.slice(0, 3)) });
+        results.push({ cat: 'CAPS MIX', val: applyMixedCaps(nCapitalized + (ex ? ex : '')) + (y ? y.slice(-2) : getRandomNumber(10, 99)) + getRandomSymbol() });
+    }
+    if (config.sym) {
+        results.push({ cat: 'SYMBOLS', val: getRandomSymbol() + nCapitalized + getRandomSymbol() + getRandomSymbol() + (y || getRandomNumber(100, 999)) });
+        results.push({ cat: 'SYMBOLS', val: nUpper.split('').join(getRandomSymbol()) + getRandomNumber(10, 99) });
+        results.push({ cat: 'SYMBOLS', val: getRandomSymbol() + getRandomSymbol() + nCapitalized + (ex ? exCapitalized : '') + getRandomSymbol() + getRandomNumber(100, 999) });
+    }
+    if (config.num) {
+        results.push({ cat: 'NUMBERS', val: nCapitalized + getRandomNumber(1, 9) + getRandomNumber(1, 9) + getRandomNumber(1, 9) + (y ? y.slice(-2) : '') + getRandomSymbol() });
+        results.push({ cat: 'NUMBERS', val: getRandomNumber(100, 999) + nUpper + (ex ? getRandomNumber(10, 99) + exCapitalized : getRandomSymbol()) });
+        results.push({ cat: 'NUMBERS', val: nCapitalized.split('').map((char, i) => i % 3 === 2 ? char + getRandomNumber(1, 9) : char).join('') + getRandomSymbol() + (y || '') });
+    }
+    if (config.rev) {
+        results.push({ cat: 'REVERSED', val: reversedCapitalized + (y || getRandomNumber(100, 999)) + getRandomSymbol() });
+        results.push({ cat: 'REVERSED', val: applyLeet(reversedCapitalized, 1) + getRandomSymbol() + getRandomNumber(10, 99) + (ex ? exCapitalized : '') });
+        results.push({ cat: 'REVERSED', val: nCapitalized + getRandomSymbol() + reversed.toUpperCase() + (y ? y.slice(-2) : getRandomNumber(10, 99)) });
+    }
+    if (config.ultra) {
+        results.push({ cat: 'ULTRA STRONG', val: getRandomSymbol() + applyLeet(nCapitalized, 2) + getRandomNumber(100, 999) + getRandomSymbol() + getRandomSymbol() + (ex ? applyLeet(exCapitalized, 1) : reversed.slice(0, 3)) + getRandomNumber(10, 99) });
+        results.push({ cat: 'ULTRA STRONG', val: applyMixedCaps(applyLeet(nCapitalized, 1)) + getRandomSymbol() + getRandomNumber(100, 999) + getRandomSymbol() + applyMixedCaps(reversedCapitalized.slice(0, 3)) + (y || getRandomNumber(10, 99)) });
+        results.push({ cat: 'ULTRA STRONG', val: getRandomSymbol() + nUpper + getRandomSymbol() + getRandomNumber(100, 999) + applyLeet(reverseString(nLower).slice(0, 4), 2) + getRandomSymbol() + getRandomSymbol() });
+    }
+
+    const seenSet = new Set();
+    return results.filter(item => {
+        if (item.val.length < 8 || seenSet.has(item.val)) return false;
+        seenSet.add(item.val);
+        return true;
+    });
+}
+
+function generatePasswords() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) {
+        displayToast('Enter a name or word first!');
+        return;
+    }
+    
+    const year = document.getElementById('yearInput').value.trim();
+    const extra = document.getElementById('extraInput').value.trim();
+    const outputDiv = document.getElementById('output');
+    
+    outputDiv.innerHTML = `
+        <div class="out-card">
+            <div class="loading-wrap">
+                <div class="loading-spinner"></div>
+                <div class="loading-txt">Generating secure passwords...</div>
+            </div>
+        </div>
+    `;
+    
+    playGenerationSound();
+    
+    setTimeout(() => {
+        const passwordObjects = buildPasswordSet(name, year, extra);
+        generatedPasswordsList = passwordObjects.map(p => p.val);
+        
+        const categories = {};
+        passwordObjects.forEach(item => {
+            if (!categories[item.cat]) categories[item.cat] = [];
+            categories[item.cat].push(item.val);
+        });
+        
+        let htmlContent = `
+            <div class="out-card">
+                <div class="out-hdr">
+                    <div class="out-title">Generated Passwords</div>
+                    <div class="out-badge">${passwordObjects.length} results</div>
+                </div>
+                <div class="out-body">
+        `;
+        
+        Object.keys(categories).forEach(catName => {
+            const dotClass = CATEGORY_STYLES[catName] || 'dot-leet';
+            htmlContent += `
+                <div class="cat-lbl">
+                    <div class="cat-dot ${dotClass}"></div>${catName}
+                </div>
+            `;
+            
+            categories[catName].forEach(pwd => {
+                const strengthInt = calculateStrengthScore(pwd);
+                const safePwd = escapeQuotes(pwd);
+                const htmlPwd = escapeHtml(pwd);
+                
+                htmlContent += `
+                    <div class="pass-row" onclick="copyToClipboard('${safePwd}')">
+                        <div class="pass-txt">${htmlPwd}</div>
+                        <div class="pass-right">
+                            <div class="pass-len">${pwd.length} chars</div>
+                            <div class="pass-str ${getStrengthClass(strengthInt)}">${getStrengthName(strengthInt)}</div>
+                        </div>
+                        <div class="pass-ico">📋</div>
+                    </div>
+                `;
+            });
+        });
+        
+        htmlContent += `
+                </div>
+            </div>
+            <button class="copy-all" onclick="copyAllPasswords()">📋 Copy All ${passwordObjects.length} Passwords</button>
+        `;
+        
+        outputDiv.innerHTML = htmlContent;
+    }, 420);
+}
+
+// --- Utilities ---
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        displayToast('✅ Copied!');
+        playCopySound();
+    }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        displayToast('✅ Copied!');
+        playCopySound();
+    });
+}
+
+function copyAllPasswords() {
+    if (!generatedPasswordsList.length) return;
+    navigator.clipboard.writeText(generatedPasswordsList.join('\n')).then(() => {
+        displayToast(`✅ All ${generatedPasswordsList.length} passwords copied!`);
+        playCopySound();
+    });
+}
+
+function displayToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
+}
+
+function escapeQuotes(str) {
+    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// --- Strength Checker ---
+let isPasswordVisible = false;
+const COMMON_PASSWORDS = ['password', '123456', 'qwerty', 'admin', 'letmein', 'welcome', 'monkey', 'dragon', 'master', 'sunshine', 'princess', 'iloveyou', 'football', 'baseball', 'superman', 'batman', 'shadow', 'hunter', 'michael', 'jessica', 'password1', 'abc123', '111111', '000000', 'pass'];
+
+function toggleVisibility() {
+    isPasswordVisible = !isPasswordVisible;
+    const input = document.getElementById('checkInput');
+    input.type = isPasswordVisible ? 'text' : 'password';
+    document.getElementById('showBtn').textContent = isPasswordVisible ? '🙈' : '👁';
+}
+
+function evaluateStrength() {
+    const password = document.getElementById('checkInput').value;
+    if (!password) {
+        resetStrengthChecker();
+        return;
+    }
+
+    const tests = {
+        'c-len': password.length >= 8,
+        'c-len12': password.length >= 12,
+        'c-upper': /[A-Z]/.test(password),
+        'c-lower': /[a-z]/.test(password),
+        'c-num': /[0-9]/.test(password),
+        'c-sym': /[^A-Za-z0-9]/.test(password),
+        'c-nocommon': !COMMON_PASSWORDS.includes(password.toLowerCase()) && !COMMON_PASSWORDS.some(common => password.toLowerCase().includes(common) && password.length < 10)
+    };
+
+    Object.keys(tests).forEach(key => {
+        const element = document.getElementById(key);
+        if (!element) return;
+        element.className = `crit ${tests[key] ? 'pass' : 'fail'}`;
+        element.querySelector('.crit-icon').textContent = tests[key] ? '✓' : '○';
+    });
+
+    let score = 0;
+    if (password.length >= 8) score += 15;
+    if (password.length >= 10) score += 10;
+    if (password.length >= 12) score += 10;
+    if (password.length >= 16) score += 10;
+    if (/[A-Z]/.test(password)) score += 12;
+    if (/[a-z]/.test(password)) score += 12;
+    if (/[0-9]/.test(password)) score += 12;
+    if (/[^A-Za-z0-9]/.test(password)) score += 14;
+    if (tests['c-nocommon']) score += 5;
+    
+    score = Math.min(100, score);
+
+    const circumference = 188.5;
+    const offset = circumference - (circumference * score / 100);
+    const circle = document.getElementById('scoreCircle');
+    circle.style.strokeDashoffset = offset;
+
+    const color = score < 30 ? '#ef5350' : 
+                  score < 50 ? '#ffb74d' : 
+                  score < 70 ? '#ffd60a' : 
+                  score < 85 ? '#66bb6a' : '#7c6dfa';
+                  
+    circle.style.stroke = color;
+    document.getElementById('scoreNum').textContent = score;
+    document.getElementById('scoreNum').style.color = color;
+
+    const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+    const subtitles = [
+        'Change this immediately!',
+        'Add more variety',
+        'Getting better...',
+        'Good password!',
+        'Very secure!',
+        'Excellent choice!'
+    ];
+    
+    const index = score < 20 ? 0 : 
+                  score < 40 ? 1 : 
+                  score < 60 ? 2 : 
+                  score < 75 ? 3 : 
+                  score < 90 ? 4 : 5;
+                  
+    document.getElementById('strLabel').textContent = labels[index];
+    document.getElementById('strLabel').style.color = color;
+    document.getElementById('strSub').textContent = subtitles[index];
+
+    const crackEstimate = estimateCrackTime(password);
+    document.getElementById('crackTime').textContent = crackEstimate.time;
+    document.getElementById('crackTime').style.color = color;
+    document.getElementById('crackNote').textContent = crackEstimate.note;
+}
+
+function estimateCrackTime(password) {
+    let charsetSize = 0;
+    if (/[a-z]/.test(password)) charsetSize += 26;
+    if (/[A-Z]/.test(password)) charsetSize += 26;
+    if (/[0-9]/.test(password)) charsetSize += 10;
+    if (/[^A-Za-z0-9]/.test(password)) charsetSize += 32;
+    
+    const combinations = Math.pow(charsetSize || 26, password.length);
+    const guessesPerSecond = 1e10; // 10 billion/sec
+    const secondsToCrack = combinations / guessesPerSecond / 2;
+    
+    if (secondsToCrack < 1) return { time: 'Instantly', note: 'Change this password now!' };
+    if (secondsToCrack < 60) return { time: Math.round(secondsToCrack) + ' seconds', note: 'Extremely vulnerable' };
+    if (secondsToCrack < 3600) return { time: Math.round(secondsToCrack / 60) + ' minutes', note: 'Very easy to crack' };
+    if (secondsToCrack < 86400) return { time: Math.round(secondsToCrack / 3600) + ' hours', note: 'Crackable in hours' };
+    if (secondsToCrack < 2592000) return { time: Math.round(secondsToCrack / 86400) + ' days', note: 'Moderate security' };
+    if (secondsToCrack < 31536000) return { time: Math.round(secondsToCrack / 2592000) + ' months', note: 'Decent protection' };
+    if (secondsToCrack < 3153600000) return { time: Math.round(secondsToCrack / 31536000) + ' years', note: 'Good security' };
+    if (secondsToCrack < 3.15e13) return { time: Math.round(secondsToCrack / 3153600000) + 'K years', note: 'Very strong!' };
+    return { time: 'Millions of years', note: 'Virtually uncrackable! 🔐' };
+}
+
+function resetStrengthChecker() {
+    document.getElementById('scoreCircle').style.strokeDashoffset = '188.5';
+    document.getElementById('scoreCircle').style.stroke = 'var(--accent)';
+    document.getElementById('scoreNum').textContent = '0';
+    document.getElementById('scoreNum').style.color = 'var(--text)';
+    document.getElementById('strLabel').textContent = '—';
+    document.getElementById('strLabel').style.color = 'var(--text2)';
+    document.getElementById('strSub').textContent = 'Type a password to check its strength';
+    document.getElementById('crackTime').textContent = '—';
+    document.getElementById('crackNote').textContent = 'Enter a password above';
+    
+    const checkKeys = ['c-len', 'c-len12', 'c-upper', 'c-lower', 'c-num', 'c-sym', 'c-nocommon'];
+    checkKeys.forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            element.className = 'crit fail';
+            element.querySelector('.crit-icon').textContent = '○';
+        }
+    });
+}
+</script>
+</body>
+</html>
