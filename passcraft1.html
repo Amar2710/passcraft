@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PassCraft">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>PassCraft — Password Generator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+
+:root{
+  --bg:#0a0a0f;
+  --bg2:#0f0f17;
+  --card:#13131e;
+  --card2:#18182a;
+  --border:rgba(255,255,255,.06);
+  --border2:rgba(255,255,255,.1);
+  --v:#8b5cf6;
+  --v2:#6d28d9;
+  --v3:rgba(139,92,246,.08);
+  --v4:rgba(139,92,246,.15);
+  --pink:#ec4899;
+  --cyan:#06b6d4;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --text:#f1f1f8;
+  --t2:#6b7280;
+  --t3:#374151;
+  --font:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:12px;
+  --r2:16px;
+  --r3:20px;
+}
+
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden}
+
+/* Ambient background */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 10%, rgba(139,92,246,.09) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 85% 85%, rgba(236,72,153,.05) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 20% at 50% 50%, rgba(6,182,212,.03) 0%, transparent 70%);
+}
+
+/* ── NAV ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:56px;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,10,15,.7);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{
+  width:32px;height:32px;border-radius:9px;
+  background:linear-gradient(135deg,var(--v),var(--pink));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(139,92,246,.35);
+  flex-shrink:0;
+}
+.nav-name{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.nav-name b{
+  background:linear-gradient(135deg,var(--v),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.nav-gh{
+  display:flex;align-items:center;gap:6px;
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:6px 12px;
+  text-decoration:none;color:var(--t2);font-size:12px;font-weight:600;
+  transition:all .15s;
+}
+.nav-gh:hover{border-color:var(--v);color:var(--v)}
+
+/* ── LAYOUT ── */
+.app{
+  position:relative;z-index:1;
+  max-width:1080px;margin:0 auto;
+  padding:80px 16px 60px;
+}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:720px){.layout{grid-template-columns:1fr}}
+.right-col{position:sticky;top:74px}
+@media(max-width:720px){.right-col{position:static}}
+
+/* ── HEADER ── */
+.hdr{text-align:center;padding:24px 0 36px}
+.hdr-lockup{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(145deg,var(--v),var(--pink));
+  box-shadow:0 12px 32px rgba(139,92,246,.3);
+  margin:0 auto 20px;
+}
+.hdr-title{
+  font-size:clamp(26px,6vw,38px);font-weight:700;
+  color:var(--text);letter-spacing:-1.2px;line-height:1;margin-bottom:8px;
+}
+.hdr-title em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--v) 0%,var(--pink) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hdr-sub{font-size:14px;color:var(--t2);letter-spacing:.1px;font-weight:400}
+
+/* ── CARDS ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r3);
+  padding:20px;
+  margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(145deg,rgba(255,255,255,.015) 0%,transparent 60%);
+}
+
+/* ── FIELD LABELS ── */
+.lbl{
+  font-size:11px;font-weight:600;color:var(--t2);
+  letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:7px;
+}
+.lbl-dot{width:5px;height:5px;border-radius:50%;background:var(--v);flex-shrink:0}
+
+/* ── INPUTS ── */
+.inp-wrap{
+  display:flex;
+  background:var(--bg2);border:1.5px solid var(--border2);
+  border-radius:var(--r);overflow:hidden;margin-bottom:10px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.inp-wrap:focus-within{
+  border-color:var(--v);
+  box-shadow:0 0 0 3px rgba(139,92,246,.12);
+}
+.inp-pre{
+  color:var(--t3);font-size:13px;
+  padding:0 14px;display:flex;align-items:center;
+  font-family:var(--mono);border-right:1px solid var(--border);
+  flex-shrink:0;
+}
+#nameInput{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--text);font-family:var(--font);font-size:15px;font-weight:500;
+  padding:13px 14px;caret-color:var(--v);
+}
+#nameInput::placeholder{color:var(--t3)}
+.gen-run{
+  background:var(--v);border:none;color:#fff;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  padding:0 18px;cursor:pointer;letter-spacing:.2px;
+  transition:background .15s;white-space:nowrap;flex-shrink:0;
+}
+.gen-run:hover{background:var(--v2)}
+.gen-run:active{filter:brightness(.9)}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.mini{
+  background:var(--bg2);border:1.5px solid var(--border2);
+  border-radius:10px;outline:none;color:var(--text);
+  font-family:var(--font);font-size:13px;padding:10px 12px;
+  width:100%;transition:border-color .2s;caret-color:var(--v);
+}
+.mini:focus{border-color:var(--v)}
+.mini::placeholder{color:var(--t3)}
+
+.sep{height:1px;background:var(--border);margin:2px 0 16px}
+
+/* ── STYLE TOGGLES ── */
+.tgl-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:7px;margin-bottom:16px;
+}
+@media(max-width:380px){.tgl-grid{grid-template-columns:repeat(2,1fr)}}
+.tgl{
+  background:var(--bg2);border:1.5px solid var(--border2);
+  border-radius:12px;padding:12px 8px;cursor:pointer;
+  text-align:center;transition:all .18s;touch-action:manipulation;
+  -webkit-appearance:none;
+}
+.tgl:active{transform:scale(.93)}
+.tgl.on{background:var(--v3);border-color:rgba(139,92,246,.4)}
+.tgl-ic{
+  width:28px;height:28px;border-radius:8px;
+  background:rgba(255,255,255,.05);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 7px;transition:background .18s;
+}
+.tgl.on .tgl-ic{background:rgba(139,92,246,.2)}
+.tgl-nm{font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.2px}
+.tgl.on .tgl-nm{color:var(--v)}
+.tgl-ex{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mono)}
+.tgl.on .tgl-ex{color:var(--t2)}
+
+/* ── MAIN GENERATE BUTTON ── */
+.gen-btn{
+  width:100%;border:none;color:#fff;
+  font-family:var(--font);font-size:15px;font-weight:600;
+  padding:15px;border-radius:var(--r2);cursor:pointer;
+  letter-spacing:.2px;touch-action:manipulation;
+  background:linear-gradient(135deg,var(--v) 0%,var(--pink) 100%);
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:0 4px 20px rgba(139,92,246,.25);
+  transition:all .2s;
+}
+.gen-btn:hover{box-shadow:0 8px 28px rgba(139,92,246,.4);filter:brightness(1.05)}
+.gen-btn:active{transform:scale(.98)}
+
+/* ── OUTPUT ── */
+.out-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r3);overflow:hidden;margin-bottom:12px;
+}
+.out-hdr{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.out-ttl{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.out-badge{
+  font-size:11px;background:var(--v3);color:var(--v);
+  border:1px solid rgba(139,92,246,.2);
+  padding:3px 10px;border-radius:20px;font-weight:600;
+}
+.out-body{padding:16px}
+
+/* ── CATEGORY LABEL ── */
+.cat-lbl{
+  font-size:10px;font-weight:600;color:var(--t2);
+  letter-spacing:1.5px;text-transform:uppercase;
+  margin:16px 0 8px;display:flex;align-items:center;gap:9px;
+}
+.cat-lbl:first-child{margin-top:0}
+.cat-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dl{background:#8b5cf6}.dc{background:#ec4899}.ds{background:#06b6d4}
+.dn{background:#10b981}.dr{background:#f59e0b}.du{background:#ef4444}
+
+/* ── PASSWORD ROW ── */
+.pass-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:11px 14px;margin-bottom:6px;
+  cursor:pointer;transition:all .15s;
+}
+.pass-row:hover{border-color:rgba(139,92,246,.35);background:rgba(139,92,246,.04)}
+.pass-row:active{transform:scale(.985)}
+.pass-txt{
+  flex:1;font-family:var(--mono);
+  font-size:clamp(11px,3.2vw,13px);color:var(--text);
+  letter-spacing:.8px;word-break:break-all;font-weight:500;
+}
+.pass-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.pass-len{font-size:10px;color:var(--t3);font-family:var(--mono)}
+.pass-str{
+  font-size:9px;font-weight:700;letter-spacing:.5px;
+  padding:2px 7px;border-radius:20px;text-transform:uppercase;
+}
+.sw{background:rgba(239,68,68,.1);color:#ef4444}
+.sf{background:rgba(245,158,11,.1);color:#f59e0b}
+.sg{background:rgba(16,185,129,.1);color:#10b981}
+.ss{background:rgba(139,92,246,.1);color:#8b5cf6}
+.pass-ic{color:var(--t3);flex-shrink:0;transition:color .15s}
+.pass-row:hover .pass-ic{color:var(--v)}
+
+.copy-all{
+  width:100%;background:transparent;
+  border:1.5px solid var(--border2);color:var(--t2);
+  font-family:var(--font);font-size:13px;font-weight:600;
+  padding:12px;border-radius:var(--r2);cursor:pointer;
+  transition:all .2s;margin-top:4px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.copy-all:hover{border-color:var(--v);color:var(--v);background:var(--v3)}
+.copy-all:active{transform:scale(.98)}
+
+/* ── LOADING ── */
+.loader{padding:32px;text-align:center}
+.spin{
+  width:32px;height:32px;border:2.5px solid var(--border2);
+  border-top-color:var(--v);border-radius:50%;
+  animation:spin .7s linear infinite;margin:0 auto 12px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:13px;color:var(--t2)}
+
+/* ── STRENGTH CHECKER ── */
+.check-wrap{position:relative;margin-bottom:14px}
+.check-inp{
+  width:100%;background:var(--bg2);border:1.5px solid var(--border2);
+  border-radius:10px;outline:none;color:var(--text);
+  font-family:var(--mono);font-size:14px;
+  padding:11px 46px 11px 14px;transition:border-color .2s;caret-color:var(--v);
+}
+.check-inp:focus{border-color:var(--v)}
+.check-inp::placeholder{color:var(--t3)}
+.eye-btn{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--t2);cursor:pointer;
+  padding:4px;display:flex;align-items:center;transition:color .15s;
+}
+.eye-btn:hover{color:var(--text)}
+
+.score-wrap{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.score-ring{position:relative;width:68px;height:68px;flex-shrink:0}
+.score-svg{transform:rotate(-90deg);width:68px;height:68px}
+.ring-bg{fill:none;stroke:var(--border2);stroke-width:5}
+.ring-fg{
+  fill:none;stroke:var(--v);stroke-width:5;stroke-linecap:round;
+  stroke-dasharray:175.9;stroke-dashoffset:175.9;
+  transition:stroke-dashoffset .5s ease,stroke .4s ease;
+}
+.score-n{
+  position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;
+  font-size:17px;font-weight:700;color:var(--text);
+}
+.str-lbl{font-size:15px;font-weight:700;color:var(--t2);margin-bottom:3px}
+.str-sub{font-size:12px;color:var(--t3);line-height:1.5}
+
+.crits{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.crit{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 11px;border-radius:8px;
+  background:var(--bg2);border:1px solid var(--border);
+  transition:all .2s;
+}
+.crit.pass{
+  background:rgba(16,185,129,.06);
+  border-color:rgba(16,185,129,.2);
+}
+.crit-ic{flex-shrink:0;width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+.crit-txt{font-size:12px;color:var(--t2);transition:color .2s}
+.crit.pass .crit-txt{color:var(--text)}
+
+.crack-box{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+}
+.crack-lbl{
+  font-size:10px;font-weight:600;color:var(--t2);
+  letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;
+}
+.crack-val{font-size:15px;font-weight:700;color:var(--v);font-family:var(--mono)}
+.crack-note{font-size:11px;color:var(--t3);margin-top:3px}
+
+/* ── TIPS ── */
+.tip-row{display:flex;align-items:flex-start;gap:10px;padding:5px 0}
+.tip-ic{flex-shrink:0;margin-top:1px}
+.tip-txt{font-size:12px;color:var(--t2);line-height:1.5}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--card2);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--font);
+  font-size:13px;font-weight:600;
+  padding:10px 20px;border-radius:10px;
+  opacity:0;transition:all .22s;pointer-events:none;
+  z-index:9999;white-space:nowrap;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <span class="nav-name">Pass<b>Craft</b></span>
+  </div>
+  <a href="https://github.com/amar2710/passcraft" target="_blank" class="nav-gh">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    GitHub
+  </a>
+</nav>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-lockup">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="#fff"/></svg>
+    </div>
+    <div class="hdr-title">Pass<em>Craft</em></div>
+    <div class="hdr-sub">Name-based secure password generator</div>
+  </div>
+
+  <div class="layout">
+    <div class="left-col">
+
+      <!-- Input Card -->
+      <div class="card">
+        <div class="lbl"><div class="lbl-dot"></div>Name or keyword</div>
+        <div class="inp-wrap">
+          <div class="inp-pre">~/</div>
+          <input type="text" id="nameInput" placeholder="Shadow, Phoenix, Dragon..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" maxlength="20">
+          <button class="gen-run" onclick="generatePasswords()">Run</button>
+        </div>
+
+        <div class="row2">
+          <input class="mini" type="number" id="yearInput" placeholder="Birth year (optional)" maxlength="4" autocomplete="off">
+          <input class="mini" type="text" id="extraInput" placeholder="Extra word (optional)" maxlength="10" autocomplete="off">
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="lbl" style="margin-bottom:10px"><div class="lbl-dot"></div>Password style</div>
+        <div class="tgl-grid">
+          <div class="tgl on" data-key="leet" onclick="toggleSetting(this)">
+            <div class="tgl-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h6"/></svg>
+            </div>
+            <div class="tgl-nm">L33T</div>
+            <div class="tgl-ex">a→4, e→3</div>
+          </div>
+          <div class="tgl on" data-key="caps" onclick="toggleSetting(this)">
+            <div class="tgl-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20 L12 4 L20 20"/><path d="M7 14 h10"/></svg>
+            </div>
+            <div class="tgl-nm">CaPs</div>
+            <div class="tgl-ex">AlTeRnAtE</div>
+          </div>
+          <div class="tgl on" data-key="sym" onclick="toggleSetting(this)">
+            <div class="tgl-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            </div>
+            <div class="tgl-nm">Symbols</div>
+            <div class="tgl-ex">!@#$%</div>
+          </div>
+          <div class="tgl on" data-key="num" onclick="toggleSetting(this)">
+            <div class="tgl-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h1l1-1v6M8 8h3l-3 4h3"/><path d="M14 8h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2v2h3"/></svg>
+            </div>
+            <div class="tgl-nm">Numbers</div>
+            <div class="tgl-ex">123 inject</div>
+          </div>
+          <div class="tgl on" data-key="rev" onclick="toggleSetting(this)">
+            <div class="tgl-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+            </div>
+            <div class="tgl-nm">Reverse</div>
+            <div class="tgl-ex">drawkcaB</div>
+          </div>
+          <div class="tgl on" data-key="ultra" onclick="toggleSetting(this)">
+            <div class="tgl-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="tgl-nm">Ultra</div>
+            <div class="tgl-ex">Max strong</div>
+          </div>
+        </div>
+
+        <button class="gen-btn" onclick="generatePasswords()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Generate Passwords
+        </button>
+      </div>
+
+      <!-- Output -->
+      <div id="output"></div>
+
+    </div>
+
+    <!-- Right col -->
+    <div class="right-col">
+      <div class="card">
+        <div class="lbl" style="margin-bottom:12px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Strength checker
+        </div>
+
+        <div class="check-wrap">
+          <input type="password" id="checkInput" class="check-inp" placeholder="Paste any password to check..." oninput="evaluateStrength()" autocomplete="off" autocorrect="off" spellcheck="false">
+          <button onclick="toggleVisibility()" id="showBtn" class="eye-btn" aria-label="Show password">
+            <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <div class="score-wrap">
+          <div class="score-ring">
+            <svg viewBox="0 0 68 68" class="score-svg">
+              <circle cx="34" cy="34" r="28" class="ring-bg"/>
+              <circle id="scoreCircle" cx="34" cy="34" r="28" class="ring-fg"/>
+            </svg>
+            <div id="scoreNum" class="score-n">0</div>
+          </div>
+          <div style="flex:1">
+            <div id="strLabel" class="str-lbl">—</div>
+            <div id="strSub" class="str-sub">Type a password to check strength</div>
+          </div>
+        </div>
+
+        <div class="crits" id="criteria">
+          <div class="crit" id="c-len">
+            <span class="crit-ic" id="ic-len"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">At least 8 characters</span>
+          </div>
+          <div class="crit" id="c-len12">
+            <span class="crit-ic" id="ic-len12"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">12+ characters (recommended)</span>
+          </div>
+          <div class="crit" id="c-upper">
+            <span class="crit-ic" id="ic-upper"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">Uppercase letters (A–Z)</span>
+          </div>
+          <div class="crit" id="c-lower">
+            <span class="crit-ic" id="ic-lower"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">Lowercase letters (a–z)</span>
+          </div>
+          <div class="crit" id="c-num">
+            <span class="crit-ic" id="ic-num"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">Numbers (0–9)</span>
+          </div>
+          <div class="crit" id="c-sym">
+            <span class="crit-ic" id="ic-sym"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">Special symbols (!@#$)</span>
+          </div>
+          <div class="crit" id="c-nocommon">
+            <span class="crit-ic" id="ic-nocommon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="crit-txt">Not a common password</span>
+          </div>
+        </div>
+
+        <div class="crack-box">
+          <div class="crack-lbl">Estimated crack time</div>
+          <div id="crackTime" class="crack-val">—</div>
+          <div id="crackNote" class="crack-note">Enter a password above</div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card">
+        <div class="lbl" style="margin-bottom:12px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Best practices
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="tip-txt">Mix uppercase and lowercase letters</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="tip-txt">Add numbers and symbols (!@#$)</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="tip-txt">Use 12+ characters minimum</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="tip-txt">Avoid common words or patterns</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="tip-txt">Unique password for every account</span>
+          </div>
+          <div class="sep" style="margin:4px 0"></div>
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+            <span class="tip-txt">Don't use your name or birthday exactly</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+            <span class="tip-txt">Never share passwords with anyone</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" id="toastIcon"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ── Audio ──
+let audioCtx = null;
+function getACtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq,type='sine',dur=0.1,vol=0.13,delay=0){
+  try{
+    const c=getACtx(),o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type=type;o.frequency.value=freq;
+    const t=c.currentTime+delay;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.start(t);o.stop(t+dur+0.05);
+  }catch(e){}
+}
+function playGen(){[300,400,500,650,800].forEach((f,i)=>playTone(f,'sine',.1,.13,i*.05))}
+function playCopy(){playTone(880,'sine',.07,.18);playTone(1100,'sine',.05,.1,.09)}
+function playToggle(){playTone(600,'triangle',.04,.07)}
+document.addEventListener('touchstart',getACtx,{once:true,passive:true});
+document.addEventListener('click',getACtx,{once:true,passive:true});
+
+// ── State ──
+const cfg={leet:true,caps:true,sym:true,num:true,rev:true,ultra:true};
+let genList=[];
+
+function toggleSetting(el){
+  const k=el.dataset.key;cfg[k]=!cfg[k];
+  el.classList.toggle('on',cfg[k]);playToggle();
+}
+document.getElementById('nameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') generatePasswords();
+});
+
+// ── Generator ──
+const LEET={'a':'4','e':'3','i':'1','o':'0','s':'5','t':'7','l':'1','g':'9','b':'8','z':'2'};
+const ALEET={'a':'@','e':'€','s':'$','i':'!','o':'()','b':'|3','t':'+'};
+const SYMS=['!','@','#','$','%','&','*','?','+','~','^','='];
+const CAT_DOT={'L33T SPEAK':'dl','CAPS MIX':'dc','SYMBOLS':'ds','NUMBERS':'dn','REVERSED':'dr','ULTRA STRONG':'du'};
+
+function leet(s,lv){
+  return s.split('').map(c=>{
+    const l=c.toLowerCase();
+    if(lv===2&&ALEET[l]&&Math.random()>.3) return ALEET[l];
+    if(LEET[l]&&Math.random()>.35) return LEET[l];
+    return c;
+  }).join('');
+}
+function mixCaps(s){return s.split('').map((c,i)=>i%2?c.toLowerCase():c.toUpperCase()).join('')}
+function rndCaps(s){return s.split('').map(c=>Math.random()>.5?c.toUpperCase():c.toLowerCase()).join('')}
+function rndSym(){return SYMS[Math.floor(Math.random()*SYMS.length)]}
+function rndN(a,b){return Math.floor(Math.random()*(b-a+1)+a)}
+function rev(s){return s.split('').reverse().join('')}
+
+function buildSet(name,year,extra){
+  const n=name,nl=n.toLowerCase(),nu=n.toUpperCase();
+  const nc=nl[0].toUpperCase()+nl.slice(1);
+  const rv=rev(nl),rvc=rv[0].toUpperCase()+rv.slice(1);
+  const y=year||'',ex=extra||'';
+  const exc=ex?ex[0].toUpperCase()+ex.slice(1).toLowerCase():'';
+  const res=[];
+
+  if(cfg.leet){
+    res.push({cat:'L33T SPEAK',val:leet(nc,1)+(y||rndN(100,999))+rndSym()});
+    res.push({cat:'L33T SPEAK',val:rndSym()+leet(nu,2)+rndN(10,99)+(ex?leet(exc,1):'')});
+    res.push({cat:'L33T SPEAK',val:leet(nc,1)+rndSym()+leet(rv.slice(0,4),1)+rndN(10,99)});
+    if(ex) res.push({cat:'L33T SPEAK',val:leet(nc,2)+leet(exc,1)+(y||rndN(10,99))+rndSym()});
+  }
+  if(cfg.caps){
+    res.push({cat:'CAPS MIX',val:mixCaps(n)+rndSym()+rndN(10,99)+(ex?mixCaps(ex):'')});
+    res.push({cat:'CAPS MIX',val:rndCaps(n)+(y||rndN(100,999))+rndSym()+rndCaps(rv.slice(0,3))});
+    res.push({cat:'CAPS MIX',val:mixCaps(nc+(ex||''))+(y?y.slice(-2):rndN(10,99))+rndSym()});
+  }
+  if(cfg.sym){
+    res.push({cat:'SYMBOLS',val:rndSym()+nc+rndSym()+rndSym()+(y||rndN(100,999))});
+    res.push({cat:'SYMBOLS',val:nu.split('').join(rndSym())+rndN(10,99)});
+    res.push({cat:'SYMBOLS',val:rndSym()+rndSym()+nc+(ex?exc:'')+rndSym()+rndN(100,999)});
+  }
+  if(cfg.num){
+    res.push({cat:'NUMBERS',val:nc+rndN(1,9)+rndN(1,9)+rndN(1,9)+(y?y.slice(-2):'')+rndSym()});
+    res.push({cat:'NUMBERS',val:rndN(100,999)+nu+(ex?rndN(10,99)+exc:rndSym())});
+    res.push({cat:'NUMBERS',val:nc.split('').map((c,i)=>i%3===2?c+rndN(1,9):c).join('')+rndSym()+(y||'')});
+  }
+  if(cfg.rev){
+    res.push({cat:'REVERSED',val:rvc+(y||rndN(100,999))+rndSym()});
+    res.push({cat:'REVERSED',val:leet(rvc,1)+rndSym()+rndN(10,99)+(ex?exc:'')});
+    res.push({cat:'REVERSED',val:nc+rndSym()+rv.toUpperCase()+(y?y.slice(-2):rndN(10,99))});
+  }
+  if(cfg.ultra){
+    res.push({cat:'ULTRA STRONG',val:rndSym()+leet(nc,2)+rndN(100,999)+rndSym()+rndSym()+(ex?leet(exc,1):rv.slice(0,3))+rndN(10,99)});
+    res.push({cat:'ULTRA STRONG',val:mixCaps(leet(nc,1))+rndSym()+rndN(100,999)+rndSym()+mixCaps(rvc.slice(0,3))+(y||rndN(10,99))});
+    res.push({cat:'ULTRA STRONG',val:rndSym()+nu+rndSym()+rndN(100,999)+leet(rev(nl).slice(0,4),2)+rndSym()+rndSym()});
+  }
+  const seen=new Set();
+  return res.filter(r=>{if(r.val.length<8||seen.has(r.val))return false;seen.add(r.val);return true;});
+}
+
+function strScore(p){
+  let s=0;
+  if(p.length>=8)s++;if(p.length>=12)s++;if(p.length>=16)s++;
+  if(/[A-Z]/.test(p))s++;if(/[a-z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;
+  return Math.min(3,Math.round(s*3/7));
+}
+function strCls(s){return['sw','sf','sg','ss'][s]}
+function strNm(s){return['Weak','Fair','Good','Strong'][s]}
+
+function generatePasswords(){
+  const name=document.getElementById('nameInput').value.trim();
+  if(!name){toast('Enter a name first');return;}
+  const year=document.getElementById('yearInput').value.trim();
+  const extra=document.getElementById('extraInput').value.trim();
+  const out=document.getElementById('output');
+
+  out.innerHTML=`<div class="out-card"><div class="loader"><div class="spin"></div><div class="load-txt">Generating secure passwords...</div></div></div>`;
+  playGen();
+
+  setTimeout(()=>{
+    const list=buildSet(name,year,extra);
+    genList=list.map(p=>p.val);
+    const cats={};
+    list.forEach(r=>{if(!cats[r.cat])cats[r.cat]=[];cats[r.cat].push(r.val);});
+
+    let h=`<div class="out-card"><div class="out-hdr"><div class="out-ttl">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--v)" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Generated passwords</div><div class="out-badge">${list.length} variants</div></div><div class="out-body">`;
+
+    Object.keys(cats).forEach(cat=>{
+      const dot=CAT_DOT[cat]||'dl';
+      h+=`<div class="cat-lbl"><div class="cat-dot ${dot}"></div>${cat}</div>`;
+      cats[cat].forEach(p=>{
+        const sc=strScore(p),safe=escQ(p),html=escH(p);
+        h+=`<div class="pass-row" onclick="copyPwd('${safe}')">
+          <div class="pass-txt">${html}</div>
+          <div class="pass-right">
+            <div class="pass-len">${p.length} chars</div>
+            <div class="pass-str ${strCls(sc)}">${strNm(sc)}</div>
+          </div>
+          <div class="pass-ic">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </div>
+        </div>`;
+      });
+    });
+
+    h+=`</div></div>
+    <button class="copy-all" onclick="copyAll()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy all ${list.length} passwords
+    </button>`;
+
+    out.innerHTML=h;
+  },400);
+}
+
+// ── Utils ──
+function copyPwd(text){
+  navigator.clipboard.writeText(text).then(()=>{toast('Copied to clipboard');playCopy();})
+    .catch(()=>{
+      const t=document.createElement('textarea');
+      t.value=text;t.style.cssText='position:fixed;opacity:0';
+      document.body.appendChild(t);t.select();document.execCommand('copy');
+      document.body.removeChild(t);toast('Copied');playCopy();
+    });
+}
+function copyAll(){
+  if(!genList.length)return;
+  navigator.clipboard.writeText(genList.join('\n')).then(()=>{toast(`All ${genList.length} passwords copied`);playCopy();});
+}
+
+let toastTimer;
+function toast(msg,isErr=false){
+  const el=document.getElementById('toast');
+  const ic=document.getElementById('toastIcon');
+  const txt=document.getElementById('toastMsg');
+  txt.textContent=msg;
+  if(isErr){
+    ic.setAttribute('stroke','#ef4444');
+    ic.innerHTML='<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+  } else {
+    ic.setAttribute('stroke','#10b981');
+    ic.innerHTML='<polyline points="20 6 9 17 4 12"/>';
+  }
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+function escQ(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ── Strength Checker ──
+let pwdVisible=false;
+const COMMON=['password','123456','qwerty','admin','letmein','welcome','monkey','dragon','master','sunshine','princess','iloveyou','football','baseball','superman','batman','shadow','hunter','michael','jessica','password1','abc123','111111','000000','pass'];
+
+const CHECK_SVG_OFF=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>`;
+const CHECK_SVG_ON=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function toggleVisibility(){
+  pwdVisible=!pwdVisible;
+  document.getElementById('checkInput').type=pwdVisible?'text':'password';
+  const ic=document.getElementById('eyeIcon');
+  if(pwdVisible){
+    ic.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    ic.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+function evaluateStrength(){
+  const pwd=document.getElementById('checkInput').value;
+  if(!pwd){resetChecker();return;}
+
+  const tests={
+    'c-len':pwd.length>=8,
+    'c-len12':pwd.length>=12,
+    'c-upper':/[A-Z]/.test(pwd),
+    'c-lower':/[a-z]/.test(pwd),
+    'c-num':/[0-9]/.test(pwd),
+    'c-sym':/[^A-Za-z0-9]/.test(pwd),
+    'c-nocommon':!COMMON.includes(pwd.toLowerCase())&&!COMMON.some(c=>pwd.toLowerCase().includes(c)&&pwd.length<10)
+  };
+
+  Object.keys(tests).forEach(k=>{
+    const el=document.getElementById(k);
+    if(!el)return;
+    el.className='crit'+(tests[k]?' pass':'');
+    const ic=el.querySelector('.crit-ic');
+    if(ic) ic.innerHTML=tests[k]?CHECK_SVG_ON:CHECK_SVG_OFF;
+  });
+
+  let sc=0;
+  if(pwd.length>=8)sc+=15;if(pwd.length>=10)sc+=10;
+  if(pwd.length>=12)sc+=10;if(pwd.length>=16)sc+=10;
+  if(/[A-Z]/.test(pwd))sc+=12;if(/[a-z]/.test(pwd))sc+=12;
+  if(/[0-9]/.test(pwd))sc+=12;if(/[^A-Za-z0-9]/.test(pwd))sc+=14;
+  if(tests['c-nocommon'])sc+=5;
+  sc=Math.min(100,sc);
+
+  const C=175.9;
+  const circle=document.getElementById('scoreCircle');
+  circle.style.strokeDashoffset=C-(C*sc/100);
+
+  const col=sc<30?'#ef4444':sc<50?'#f59e0b':sc<70?'#fbbf24':sc<85?'#10b981':'#8b5cf6';
+  circle.style.stroke=col;
+  const sn=document.getElementById('scoreNum');
+  sn.textContent=sc;sn.style.color=col;
+
+  const lbls=['Very Weak','Weak','Fair','Good','Strong','Very Strong'];
+  const subs=['Change this immediately','Add more variety','Getting there...','Good password','Very secure','Excellent choice'];
+  const i=sc<20?0:sc<40?1:sc<60?2:sc<75?3:sc<90?4:5;
+
+  const sl=document.getElementById('strLabel');
+  sl.textContent=lbls[i];sl.style.color=col;
+  document.getElementById('strSub').textContent=subs[i];
+
+  const ct=crack(pwd);
+  const cv=document.getElementById('crackTime');
+  cv.textContent=ct.time;cv.style.color=col;
+  document.getElementById('crackNote').textContent=ct.note;
+}
+
+function crack(p){
+  let cs=0;
+  if(/[a-z]/.test(p))cs+=26;if(/[A-Z]/.test(p))cs+=26;
+  if(/[0-9]/.test(p))cs+=10;if(/[^A-Za-z0-9]/.test(p))cs+=32;
+  const comb=Math.pow(cs||26,p.length);
+  const sec=comb/1e10/2;
+  if(sec<1)return{time:'Instantly',note:'Change this password now'};
+  if(sec<60)return{time:Math.round(sec)+' seconds',note:'Extremely vulnerable'};
+  if(sec<3600)return{time:Math.round(sec/60)+' minutes',note:'Very easy to crack'};
+  if(sec<86400)return{time:Math.round(sec/3600)+' hours',note:'Crackable in hours'};
+  if(sec<2592000)return{time:Math.round(sec/86400)+' days',note:'Moderate security'};
+  if(sec<31536000)return{time:Math.round(sec/2592000)+' months',note:'Decent protection'};
+  if(sec<3153600000)return{time:Math.round(sec/31536000)+' years',note:'Good security'};
+  if(sec<3.15e13)return{time:Math.round(sec/3153600000)+'K years',note:'Very strong'};
+  return{time:'Millions of years',note:'Virtually uncrackable'};
+}
+
+function resetChecker(){
+  const C=175.9;
+  document.getElementById('scoreCircle').style.strokeDashoffset=C;
+  document.getElementById('scoreCircle').style.stroke='var(--v)';
+  const sn=document.getElementById('scoreNum');
+  sn.textContent='0';sn.style.color='var(--text)';
+  document.getElementById('strLabel').textContent='—';
+  document.getElementById('strLabel').style.color='var(--t2)';
+  document.getElementById('strSub').textContent='Type a password to check strength';
+  document.getElementById('crackTime').textContent='—';
+  document.getElementById('crackTime').style.color='var(--v)';
+  document.getElementById('crackNote').textContent='Enter a password above';
+  ['c-len','c-len12','c-upper','c-lower','c-num','c-sym','c-nocommon'].forEach(k=>{
+    const el=document.getElementById(k);
+    if(!el)return;el.className='crit';
+    const ic=el.querySelector('.crit-ic');
+    if(ic)ic.innerHTML=CHECK_SVG_OFF;
+  });
+}
+</script>
+</body>
+</html>
